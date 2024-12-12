@@ -13,18 +13,24 @@ const createBlog = async (title, content, authorId) => {
 };
 
 
-const updateBlog = async (id, data) => {
-    const blog = await BlogPost.findByPk(id);
-    if (!blog) throw new Error('Blog not found');
-    return blog.update(data);
-  };
-  
-  const deleteBlog = async (id) => {
-    const blog = await BlogPost.findByPk(id);
-    if (!blog) throw new Error('Blog not found');
-    return blog.destroy();
-  };
+const updateBlog = async (id, data, userId, userRole) => {
+  const blog = await BlogPost.findByPk(id);
+  if (!blog) throw new Error('Blog not found');
 
+  // admin kenukuth newi, own user th newi 
+  if (userRole !== 'admin' && blog.authorId !== userId) {
+    throw new Error('Unauthorized');
+  }
+  return blog.update(data);
+};
 
+const deleteBlog = async (id, userId, userRole) => {
+  const blog = await BlogPost.findByPk(id);
+  if (!blog) throw new Error('Blog not found');
+  if (userRole !== 'admin' && blog.authorId !== userId) {
+    throw new Error('Unauthorized');
+  }
+  return blog.destroy();
+};
 
 module.exports = { getAllBlogs, getAllBlogsByUserId, createBlog, updateBlog, deleteBlog };

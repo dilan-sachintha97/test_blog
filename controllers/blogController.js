@@ -12,37 +12,28 @@ exports.createPost = async (req, res) => {
 
 exports.getPosts = async (req, res) => {
   try {
-    const posts = await getAllBlogs();
+    const posts = req.user.role === 'admin' ? await getAllBlogs() : await getAllBlogsByUserId(req.user.id);
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-exports.getUserPosts = async (req, res) => {
-    try {
-      const posts = await getAllBlogsByUserId(req.user.id);
-      res.status(200).json(posts);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
+exports.updatePost = async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const post = await updateBlog(req.params.id, { title, content }, req.user.id, req.user.role);
+    res.status(200).json(post);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
 
-  exports.updatePost = async (req, res) => {
-    try {
-      const { title, content } = req.body;
-      const post = await updateBlog(req.params.id, { title, content });
-      res.status(200).json(post);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  };
-  
-  exports.deletePost = async (req, res) => {
-    try {
-      await deleteBlog(req.params.id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
+exports.deletePost = async (req, res) => {
+  try {
+    await deleteBlog(req.params.id, req.user.id, req.user.role);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
